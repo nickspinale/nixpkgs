@@ -37,11 +37,17 @@ stdenv.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ pkgconfig ];
-  buildInputs = [ readline libusb libewf perl zlib openssl]
+  buildInputs = [ readline libusb libewf perl zlib openssl ]
     ++ optional useX11 [gtkdialog vte gtk2]
     ++ optional rubyBindings [ruby]
     ++ optional pythonBindings [python]
     ++ optional luaBindings [lua];
+
+  preConfigure = ''
+    export HOST_CC=clang
+  '';
+
+  configureFlags = ["--with-compiler=clang"];
 
   postInstall = ''
     # replace symlinks pointing into the build directory with the files they point to
