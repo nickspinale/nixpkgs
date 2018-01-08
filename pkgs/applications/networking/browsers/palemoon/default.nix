@@ -10,14 +10,14 @@
 
 stdenv.mkDerivation rec {
   name = "palemoon-${version}";
-  version = "27.5.0";
+  version = "27.6.2";
 
   src = fetchFromGitHub {
     name   = "palemoon-src";
     owner  = "MoonchildProductions";
     repo   = "Pale-Moon";
     rev    = version + "_Release";
-    sha256 = "0m4fgwxn6hs8r240i6acaajx76cvqy1b7cqmdsxd33qpjrrj1h9d";
+    sha256 = "0ickxrwl36iyqj3v9qq6hnfl2y652f2ppwi949pfh4f6shm9x0ri";
   };
 
   desktopItem = makeDesktopItem {
@@ -59,12 +59,18 @@ stdenv.mkDerivation rec {
     echo > $MOZ_CONFIG "
     . $src/build/mozconfig.common
     ac_add_options --prefix=$out
+    ac_add_options --with-pthreads
     ac_add_options --enable-application=browser
     ac_add_options --enable-official-branding
     ac_add_options --enable-optimize="-O2"
+    ac_add_options --enable-release
+    ac_add_options --enable-devtools
     ac_add_options --enable-jemalloc
     ac_add_options --enable-shared-js
+    ac_add_options --enable-strip
     ac_add_options --disable-tests
+    ac_add_options --disable-installer
+    ac_add_options --disable-updaters
     "
   '';
 

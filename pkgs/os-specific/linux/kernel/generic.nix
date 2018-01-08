@@ -29,7 +29,6 @@
 , ...
 }:
 
-assert stdenv.platform.name == "sheevaplug" -> stdenv.platform.uboot != null;
 assert stdenv.isLinux;
 
 let
@@ -119,7 +118,7 @@ let
   };
 
   kernel = buildLinux {
-    inherit version modDirVersion src kernelPatches stdenv;
+    inherit version modDirVersion src kernelPatches stdenv extraMeta;
 
     configfile = configfile.nativeDrv or configfile;
 
@@ -132,10 +131,7 @@ let
 
   passthru = {
     features = kernelFeatures;
-
-    meta = kernel.meta // extraMeta;
-
-    passthru = kernel.passthru // (removeAttrs passthru [ "passthru" "meta" ]);
+    passthru = kernel.passthru // (removeAttrs passthru [ "passthru" ]);
   };
 
   nativeDrv = lib.addPassthru kernel.nativeDrv passthru;

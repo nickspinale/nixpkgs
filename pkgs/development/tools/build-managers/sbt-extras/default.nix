@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub }:
+{ stdenv, fetchFromGitHub, which, curl, makeWrapper, jdk }:
 
 let
   rev = "77686b3dfa20a34270cc52377c8e37c3a461e484";
@@ -17,9 +17,16 @@ stdenv.mkDerivation {
 
   dontBuild = true;
 
+  buildInputs = [ makeWrapper ];
+
   installPhase = ''
     mkdir -p $out/bin
+
+    substituteInPlace bin/sbt --replace 'declare java_cmd="java"' 'declare java_cmd="${jdk}/bin/java"'
+
     install bin/sbt $out/bin
+
+    wrapProgram $out/bin/sbt --prefix PATH : ${stdenv.lib.makeBinPath [ which curl ]}
   '';
 
   meta = {

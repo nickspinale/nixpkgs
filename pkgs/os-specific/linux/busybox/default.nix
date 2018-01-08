@@ -1,4 +1,4 @@
-{ stdenv, lib, buildPackages, fetchurl
+{ stdenv, lib, buildPackages, fetchurl, fetchpatch
 , enableStatic ? false
 , enableMinimal ? false
 , useMusl ? false, musl
@@ -39,7 +39,24 @@ stdenv.mkDerivation rec {
 
   hardeningDisable = [ "format" ] ++ lib.optionals enableStatic [ "fortify" ];
 
-  patches = [ ./busybox-in-store.patch ];
+  patches = [
+    ./busybox-in-store.patch 
+    (fetchpatch {
+      name = "CVE-2017-15873.patch";
+      url = "https://git.busybox.net/busybox/patch/?id=0402cb32df015d9372578e3db27db47b33d5c7b0";
+      sha256 = "1s3xqifd0dww19mbnzrks0i1az0qwd884sxjzrx33d6a9jxv4dzn";
+    })
+    (fetchpatch {
+      name = "CVE-2017-15874.patch";
+      url = "https://git.busybox.net/busybox/patch/?id=9ac42c500586fa5f10a1f6d22c3f797df11b1f6b";
+      sha256 = "0169p4ylz9zd14ghhb39yfjvbdca2kb21pphylfh9ny7i484ahql";
+    })
+    (fetchpatch {
+      name = "CVE-2017-16544.patch";
+      url = "https://git.busybox.net/busybox/patch/?id=c3797d40a1c57352192c6106cc0f435e7d9c11e8";
+      sha256 = "1q3lkc4xczxrzhz73x2r0w7kmd6y33zhcnz3478nk5xi0qr66mcy";
+    })
+  ];
 
   configurePhase = ''
     export KCONFIG_NOTIMESTAMP=1
@@ -66,7 +83,7 @@ stdenv.mkDerivation rec {
     CONFIG_DEFAULT_SETFONT_DIR "/etc/kbd"
 
     ${extraConfig}
-    CONFIG_CROSS_COMPILER_PREFIX "${stdenv.cc.prefix}"
+    CONFIG_CROSS_COMPILER_PREFIX "${stdenv.cc.targetPrefix}"
     EOF
 
     make oldconfig
@@ -75,10 +92,10 @@ stdenv.mkDerivation rec {
   '';
 
   postConfigure = lib.optionalString useMusl ''
-    makeFlagsArray+=("CC=${stdenv.cc.prefix}gcc -isystem ${musl}/include -B${musl}/lib -L${musl}/lib")
+    makeFlagsArray+=("CC=${stdenv.cc.targetPrefix}gcc -isystem ${musl}/include -B${musl}/lib -L${musl}/lib")
   '';
 
-  nativeBuildInputs = lib.optional (hostPlatform != buildPlatform) buildPackages.stdenv.cc;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   buildInputs = lib.optionals (enableStatic && !useMusl) [ stdenv.cc.libc stdenv.cc.libc.static ];
 

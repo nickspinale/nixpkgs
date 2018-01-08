@@ -6,10 +6,21 @@ let
   };
 in
 nodePackages // {
+  dat = nodePackages.dat.override (oldAttrs: {
+    buildInputs = oldAttrs.buildInputs ++ [ nodePackages.node-gyp-build ];
+  });
+
+  dnschain =  nodePackages.dnschain.override (oldAttrs: {
+    buildInputs = oldAttrs.buildInputs ++ [ pkgs.makeWrapper nodePackages.coffee-script ];
+    postInstall = ''
+      wrapProgram $out/bin/dnschain --suffix PATH : ${pkgs.openssl.bin}/bin
+    '';
+  });
+
   node-inspector = nodePackages.node-inspector.override (oldAttrs: {
     buildInputs = oldAttrs.buildInputs ++ [ nodePackages.node-pre-gyp ];
   });
-  
+
   phantomjs = nodePackages.phantomjs.override (oldAttrs: {
     buildInputs = oldAttrs.buildInputs ++ [ pkgs.phantomjs2 ];
   });
@@ -54,7 +65,7 @@ nodePackages // {
     '';
   });
 
-  fast-cli = nodePackages.fast-cli.override (oldAttrs: {
+  fast-cli = nodePackages."fast-cli-1.x".override (oldAttrs: {
     preRebuild = ''
       # Simply ignore the phantomjs --version check. It seems to need a display but it is safe to ignore
       sed -i -e "s|console.error('Error verifying phantomjs, continuing', err)|console.error('Error verifying phantomjs, continuing', err); return true;|" node_modules/phantomjs-prebuilt/lib/util.js

@@ -1,4 +1,4 @@
-{stdenv, fetchFromGitHub, fetchurl, pkgconfig, libusb, readline, libewf, perl, zlib, openssl,
+{stdenv, fetchFromGitHub, fetchurl, fetchpatch, pkgconfig, libusb, readline, libewf, perl, zlib, openssl,
 gtk2 ? null, vte ? null, gtkdialog ? null,
 python ? null,
 ruby ? null,
@@ -13,14 +13,14 @@ let
   inherit (stdenv.lib) optional;
 in
 stdenv.mkDerivation rec {
-  version = "2.0.0";
+  version = "2.2.0";
   name = "radare2-${version}";
 
   src = fetchFromGitHub {
     owner = "radare";
     repo = "radare2";
     rev = version;
-    sha256 = "1ahai9x6jc15wjzdbdkri3rc88ark2i5s8nv2pxcp0wwldvawlzi";
+    sha256 = "0rd1dfgwdpn3x1pzi67sw040vxywbg5h6yw0mj317p0p1cvlyihl";
   };
 
   postPatch = let
@@ -35,6 +35,8 @@ stdenv.mkDerivation rec {
     cp ${capstone} shlr/capstone-${cs_ver}.tar.gz
 
   '';
+
+  enableParallelBuilding = true;
 
   nativeBuildInputs = [ pkgconfig ];
   buildInputs = [ readline libusb libewf perl zlib openssl ]

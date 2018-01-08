@@ -1,9 +1,11 @@
-{ callPackage, boost155, boost162, openssl_1_1_0, haskellPackages, darwin, libsForQt5 }:
+{ callPackage, boost155, boost162, openssl_1_1_0, haskellPackages, darwin, libsForQt5, miniupnpc_2, python3 }:
 
 rec {
 
-  bitcoin  = callPackage ./bitcoin.nix { withGui = true; };
-  bitcoind = callPackage ./bitcoin.nix { withGui = false; };
+  aeon = callPackage ./aeon { };
+
+  bitcoin  = libsForQt5.callPackage ./bitcoin.nix { miniupnpc = miniupnpc_2; withGui = true; };
+  bitcoind = callPackage ./bitcoin.nix { miniupnpc = miniupnpc_2; withGui = false; };
 
   bitcoin-abc  = libsForQt5.callPackage ./bitcoin-abc.nix { withGui = true; };
   bitcoind-abc = callPackage ./bitcoin-abc.nix { withGui = false; };
@@ -20,6 +22,8 @@ rec {
   btc1 = callPackage ./btc1.nix { withGui = true; };
   btc1d = callPackage ./btc1.nix { withGui = false; };
 
+  cryptop = python3.pkgs.callPackage ./cryptop { };
+
   dashpay = callPackage ./dashpay.nix { };
 
   dogecoin  = callPackage ./dogecoin.nix { withGui = true; };
@@ -31,9 +35,6 @@ rec {
     inherit (darwin.apple_sdk.frameworks) IOKit;
   };
   go-ethereum-classic = callPackage ./go-ethereum-classic { };
-
-  hivemind = callPackage ./hivemind.nix { withGui = true; };
-  hivemindd = callPackage ./hivemind.nix { withGui = false; };
 
   litecoin  = callPackage ./litecoin.nix { withGui = true; };
   litecoind = callPackage ./litecoin.nix { withGui = false; };

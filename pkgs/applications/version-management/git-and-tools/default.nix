@@ -51,6 +51,10 @@ rec {
   git-annex = pkgs.haskellPackages.git-annex;
   gitAnnex = git-annex;
 
+  git-annex-metadata-gui = libsForQt5.callPackage ./git-annex-metadata-gui {
+    inherit (python3Packages) buildPythonApplication pyqt5 git-annex-adapter;
+  };
+
   git-annex-remote-b2 = callPackage ./git-annex-remote-b2 { };
 
   git-annex-remote-rclone = callPackage ./git-annex-remote-rclone { };
@@ -83,6 +87,8 @@ rec {
   };
 
   git-remote-hg = callPackage ./git-remote-hg { };
+
+  git-secret = callPackage ./git-secret { };
 
   git-stree = callPackage ./git-stree { };
 

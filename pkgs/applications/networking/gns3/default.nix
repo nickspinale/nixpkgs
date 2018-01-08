@@ -1,8 +1,8 @@
 { callPackage, stdenv }:
 
 let
-  stableVersion = "2.0.3";
-  previewVersion = "2.1.0rc3";
+  stableVersion = "2.1.1";
+  previewVersion = "2.1.1";
   addVersion = args:
     let version = if args.stable then stableVersion else previewVersion;
         branch = if args.stable then "stable" else "preview";
@@ -12,19 +12,19 @@ let
 in {
   guiStable = mkGui {
     stable = true;
-    sha256Hash = "10qp6430md8d0h2wamgfaq7pai59mqmcw6sw3i1gvb20m0avvsvb";
+    sha256Hash = "1iyp5k8z3y32rv8wq268dk92vms5vhhhijxphwvfndh743jaynyk";
   };
   guiPreview = mkGui {
     stable = false;
-    sha256Hash = "0yc5lr01xb7lk4dsrwx79mimbr91vldpvqbrx37j3kym6p5m84cn";
+    sha256Hash = "1iyp5k8z3y32rv8wq268dk92vms5vhhhijxphwvfndh743jaynyk";
   };
 
   serverStable = mkServer {
     stable = true;
-    sha256Hash = "1c7mzj1r2zh90a7vs3s17jakfp9s43b8nnj29rpamqxvl3qhbdy7";
+    sha256Hash = "0d427p1g7misbryrn3yagpgxcjwiim39g11zzisw2744l116p7pv";
   };
   serverPreview = mkServer {
     stable = false;
-    sha256Hash = "1lac88d9cmlhrwmlvxv1sk86600rwznw3lpsm440bax6qbdfcis3";
+    sha256Hash = "0d427p1g7misbryrn3yagpgxcjwiim39g11zzisw2744l116p7pv";
   };
 }

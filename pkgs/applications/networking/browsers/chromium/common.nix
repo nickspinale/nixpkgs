@@ -64,9 +64,8 @@ let
     # "libjpeg" # fails with multiple undefined references to chromium_jpeg_*
     # "re2" # fails with linker errors
     # "ffmpeg" # https://crbug.com/731766
-  ] ++ optionals (versionRange "62" "63") [
-    "harfbuzz-ng" # in versions over 63 harfbuzz and freetype are being built together
-                  # so we can't build with one from system and other from source
+    # "harfbuzz-ng" # in versions over 63 harfbuzz and freetype are being built together
+                    # so we can't build with one from system and other from source
   ];
 
   opusWithCustomModes = libopus.override {
@@ -80,9 +79,8 @@ let
     xdg_utils yasm minizip libwebp
     libusb1 re2 zlib
     ffmpeg libxslt libxml2
-  ] ++ optionals (versionRange "62" "63") [
-    harfbuzz-icu # in versions over 63 harfbuzz and freetype are being built together
-                 # so we can't build with one from system and other from source
+    # harfbuzz-icu # in versions over 63 harfbuzz and freetype are being built together
+                   # so we can't build with one from system and other from source
   ];
 
   # build paths and release info
@@ -139,14 +137,9 @@ let
       # https://gitweb.gentoo.org/repo/gentoo.git/plain/www-client/chromium/
       # https://git.archlinux.org/svntogit/packages.git/tree/trunk?h=packages/chromium
       # for updated patches and hints about build flags
-      ++ optionals (versionRange "62" "63") [
-      ./patches/chromium-gn-bootstrap-r17.patch
-      ./patches/chromium-gcc5-r3.patch
-      ./patches/chromium-glibc2.26-r1.patch
-    ]
-      ++ optionals (versionAtLeast version "63") [
+      ++ optionals (versionRange "63" "64") [
       ./patches/chromium-gcc5-r4.patch
-      ./patches/constexpr-fix.patch
+      ./patches/include-math-for-round.patch
     ]
       ++ optional enableWideVine ./patches/widevine.patch;
 
@@ -156,6 +149,9 @@ let
         --replace \
           'return sandbox_binary;' \
           'return base::FilePath(GetDevelSandboxPath());'
+
+      sed -i -e 's@"\(#!\)\?.*xdg-@"\1${xdg_utils}/bin/xdg-@' \
+        chrome/browser/shell_integration_linux.cc
 
       sed -i -e '/lib_loader.*Load/s!"\(libudev\.so\)!"${systemd.lib}/lib/\1!' \
         device/udev_linux/udev?_loader.cc
@@ -263,6 +259,12 @@ let
         ninja -C "${buildPath}"  \
           -j$(( ($NIX_BUILD_CORES+1) / 2 )) -l$(( $NIX_BUILD_CORES+1 )) \
           "${target}"
+        (
+          source chrome/installer/linux/common/installer.include
+          PACKAGE=$packageName
+          MENUNAME="Chromium"
+          process_template chrome/app/resources/manpage.1.in "${buildPath}/chrome.1"
+        )
       '' + optionalString (target == "mksnapshot" || target == "chrome") ''
         paxmark m "${buildPath}/${target}"
       '';
