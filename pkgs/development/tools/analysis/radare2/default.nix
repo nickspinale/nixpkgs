@@ -10,7 +10,7 @@ assert rubyBindings -> ruby != null;
 assert pythonBindings -> python != null;
 
 let
-  inherit (stdenv.lib) optional;
+  inherit (stdenv.lib) optional optionalString;
 in
 stdenv.mkDerivation rec {
   version = "2.2.0";
@@ -39,24 +39,17 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   nativeBuildInputs = [ pkgconfig ];
-  buildInputs = [ readline libusb libewf perl zlib openssl ]
+  buildInputs = [ readline libusb libewf perl zlib openssl]
     ++ optional useX11 [gtkdialog vte gtk2]
     ++ optional rubyBindings [ruby]
     ++ optional pythonBindings [python]
     ++ optional luaBindings [lua];
 
-  preConfigure = ''
+  preConfigure = optionalString stdenv.isDarwin ''
     export HOST_CC=clang
   '';
 
-  configureFlags = ["--with-compiler=clang"];
-
-  postInstall = ''
-    # replace symlinks pointing into the build directory with the files they point to
-    rm $out/bin/{r2-docker,r2-indent}
-    cp sys/r2-docker.sh $out/bin/r2-docker
-    cp sys/indent.sh    $out/bin/r2-indent
-  '';
+  configureFlags = optional stdenv.isDarwin ["--with-compiler=clang"];
 
   meta = {
     description = "unix-like reverse engineering framework and commandline tools";

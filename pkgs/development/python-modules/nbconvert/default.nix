@@ -1,4 +1,5 @@
-{ lib
+{ stdenv
+, lib
 , buildPythonPackage
 , fetchPypi
 , pytest
@@ -37,11 +38,12 @@ buildPythonPackage rec {
     jupyter_core nbformat ipykernel pandocfilters tornado jupyter_client
   ];
 
-  doCheck = false;
-  # checkPhase = ''
-  #   mkdir tmp
-  #   LC_ALL=en_US.utf8 HOME=`realpath tmp` py.test -v
-  # '';
+  doCheck = !stdenv.isDarwin;
+
+  checkPhase = ''
+    mkdir tmp
+    LC_ALL=en_US.UTF-8 HOME=`realpath tmp` py.test -v
+  '';
 
   meta = {
     description = "Converting Jupyter Notebooks";
