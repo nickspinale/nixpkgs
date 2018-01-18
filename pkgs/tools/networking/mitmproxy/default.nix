@@ -33,6 +33,7 @@ buildPythonPackage rec {
     sha256 = "0rvwm11yryzlp3c1i42rk2iv1m38yn6r83k41jb51hwg6wzbwzvw";
   };
 
+  doCheck = !stdenv.isDarwin;
   checkPhase = ''
     export HOME=$(mktemp -d)
     # test_echo resolves hostnames

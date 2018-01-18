@@ -1,4 +1,5 @@
-{ lib
+{ stdenv
+, lib
 , buildPythonPackage
 , fetchPypi
 , nose
@@ -40,6 +41,7 @@ buildPythonPackage rec {
     jupyter_client nbformat nbconvert ipykernel terminado requests pexpect
   ];
 
+  doCheck = !stdenv.isDarwin;
   # disable warning_filters
   preCheck = lib.optionalString (!isPy3k) ''
     echo "" > setup.cfg
