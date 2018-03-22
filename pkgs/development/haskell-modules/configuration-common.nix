@@ -37,7 +37,7 @@ self: super: {
   hackage-security = dontCheck super.hackage-security;
 
   # Link statically to avoid runtime dependency on GHC.
-  jailbreak-cabal = (disableSharedExecutables super.jailbreak-cabal).override { Cabal = self.Cabal_1_20_0_4; };
+  jailbreak-cabal = disableSharedExecutables super.jailbreak-cabal;
 
   # enable using a local hoogle with extra packagages in the database
   # nix-shell -p "haskellPackages.hoogleLocal { packages = with haskellPackages; [ mtl lens ]; }"
@@ -75,13 +75,30 @@ self: super: {
 
   # The Hackage tarball is purposefully broken, because it's not intended to be, like, useful.
   # https://git-annex.branchable.com/bugs/bash_completion_file_is_missing_in_the_6.20160527_tarball_on_hackage/
-  git-annex = (overrideCabal super.git-annex (drv: {
+  git-annex = ((overrideCabal super.git-annex (drv: {
     src = pkgs.fetchgit {
       name = "git-annex-${drv.version}-src";
       url = "git://git-annex.branchable.com/";
       rev = "refs/tags/" + drv.version;
-      sha256 = "1fd7lyrwr60dp55swc5iwl0mkkzmdzpmj9qmx1qca2r7y9wc5w5k";
+      sha256 = "0qi5wpsvw6g8xrri1pr0401370acs5sg75myr0h5mjad6pvqc667";
     };
+  })).overrideScope (self: super: {
+    aws = dontCheck (self.aws_0_18);
+    conduit = self.conduit_1_2_13_1;
+    conduit-extra = self.conduit-extra_1_2_3_2;
+    cryptonite-conduit = dontCheck super.cryptonite-conduit;  # test suite does not compile with old versions used here
+    html-conduit = self.html-conduit_1_2_1_2;
+    http-conduit = self.http-conduit_2_2_4;
+    persistent = self.persistent_2_7_3_1;
+    persistent-sqlite = self.persistent-sqlite_2_6_4;
+    resourcet = self.resourcet_1_1_11;
+    xml-conduit = self.xml-conduit_1_7_1_2;
+    yesod = self.yesod_1_4_5;
+    yesod-core = self.yesod-core_1_4_37_3;
+    yesod-form = self.yesod-form_1_4_16;
+    yesod-persistent = self.yesod-persistent_1_4_3;
+    yesod-static = self.yesod-static_1_5_3_1;
+    yesod-test = self.yesod-test_1_5_9_1;
   })).override {
     dbus = if pkgs.stdenv.isLinux then self.dbus else null;
     fdo-notify = if pkgs.stdenv.isLinux then self.fdo-notify else null;
@@ -94,7 +111,7 @@ self: super: {
 
     # the tests for shell-conduit on Darwin illegitimatey assume non-GNU echo
     # see: https://github.com/psibi/shell-conduit/issues/12
-    doCheck = !pkgs.stdenv.hostPlatform.isDarwin;
+    doCheck = !pkgs.stdenv.isDarwin;
   }));
 
   # https://github.com/froozen/kademlia/issues/2
@@ -102,6 +119,7 @@ self: super: {
 
   # Test suite doesn't terminate
   hzk = dontCheck super.hzk;
+
   # Tests require a Kafka broker running locally
   haskakafka = dontCheck super.haskakafka;
 
@@ -281,6 +299,7 @@ self: super: {
   hashed-storage = dontCheck super.hashed-storage;
   hashring = dontCheck super.hashring;
   hath = dontCheck super.hath;
+  haxl = dontCheck super.haxl;                          # non-deterministic failure https://github.com/facebook/Haxl/issues/85
   haxl-facebook = dontCheck super.haxl-facebook;        # needs facebook credentials for testing
   hdbi-postgresql = dontCheck super.hdbi-postgresql;
   hedis = dontCheck super.hedis;
@@ -325,6 +344,7 @@ self: super: {
   orgmode-parse = dontCheck super.orgmode-parse;
   os-release = dontCheck super.os-release;
   persistent-redis = dontCheck super.persistent-redis;
+  pure-zlib = dontCheck super.pure-zlib; # https://github.com/NixOS/nixpkgs/issues/37499
   pipes-extra = dontCheck super.pipes-extra;
   pipes-websockets = dontCheck super.pipes-websockets;
   postgresql-binary = dontCheck super.postgresql-binary; # needs a running postgresql server
@@ -350,12 +370,6 @@ self: super: {
   th-printf = dontCheck super.th-printf;
   thumbnail-plus = dontCheck super.thumbnail-plus;
   tickle = dontCheck super.tickle;
-  tldr = super.tldr.override {
-    # shell-conduit determines what commands are available at compile-time, so
-    # that tldr will not compile unless the shell-conduit it uses is compiled
-    # with git in its environment.
-    shell-conduit = addBuildTool self.shell-conduit pkgs.git;
-  };
   tpdb = dontCheck super.tpdb;
   translatable-intset = dontCheck super.translatable-intset;
   ua-parser = dontCheck super.ua-parser;
@@ -418,9 +432,8 @@ self: super: {
   # https://github.com/vincenthz/hs-asn1/issues/12
   asn1-encoding = dontCheck super.asn1-encoding;
 
-  # Depends on QuickCheck 1.x.
-  HaVSA = super.HaVSA.override { QuickCheck = self.QuickCheck_1_2_0_1; };
-  test-framework-quickcheck = super.test-framework-quickcheck.override { QuickCheck = self.QuickCheck_1_2_0_1; };
+  # Avoid "QuickCheck >=2.3 && <2.10" dependency we cannot fulfill in lts-11.x.
+  test-framework = dontCheck super.test-framework;
 
   # Depends on broken test-framework-quickcheck.
   apiary = dontCheck super.apiary;
@@ -450,6 +463,11 @@ self: super: {
 
   # Test suite won't compile against tasty-hunit 0.9.x.
   zlib = dontCheck super.zlib;
+
+  # Test suite won't compile against tasty-hunit 0.10.x.
+  binary-parser = dontCheck super.binary-parser;
+  bytestring-strict-builder = dontCheck super.bytestring-strict-builder;
+  bytestring-tree-builder = dontCheck super.bytestring-tree-builder;
 
   # https://github.com/ndmitchell/shake/issues/206
   # https://github.com/ndmitchell/shake/issues/267
@@ -543,11 +561,8 @@ self: super: {
   # https://github.com/athanclark/sets/issues/2
   sets = dontCheck super.sets;
 
-  # Install icons and metadata, remove broken hgettext dependency.
-  # https://github.com/vasylp/hgettext/issues/10
+  # Install icons, metadata and cli program.
   bustle = overrideCabal super.bustle (drv: {
-    configureFlags = drv.configureFlags or [] ++ ["-f-hgettext"];
-    executableHaskellDepends = pkgs.lib.remove self.hgettext drv.executableHaskellDepends;
     buildDepends = [ pkgs.libpcap ];
     buildTools = with pkgs; [ gettext perl help2man intltool ];
     doCheck = false; # https://github.com/wjt/bustle/issues/6
@@ -592,7 +607,9 @@ self: super: {
       mkdir -p $data/share/emacs
       ln -s $lispdir $data/share/emacs/site-lisp
     '';
-  }));
+  })).override {
+    haskell-src-exts = self.haskell-src-exts_1_19_1;
+  };
 
   # Make elisp files available at a location where people expect it.
   hindent = (overrideCabal super.hindent (drv: {
@@ -604,9 +621,10 @@ self: super: {
       ln -s $lispdir $data/share/emacs/site-lisp
     '';
     doCheck = false; # https://github.com/chrisdone/hindent/issues/299
-  })).override {
-    haskell-src-exts = self.haskell-src-exts_1_20_1;
-  };
+  }));
+
+  # Need newer versions of their dependencies than the ones we have in LTS-11.x.
+  cabal2nix = super.cabal2nix.overrideScope (self: super: { hpack = self.hpack_0_28_2; hackage-db = self.hackage-db_2_0_1; });
 
   # https://github.com/bos/configurator/issues/22
   configurator = dontCheck super.configurator;
@@ -630,15 +648,12 @@ self: super: {
   phash = markBroken super.phash;
 
   # https://github.com/deech/fltkhs/issues/16
-  # linking fails because the build doesn't pull in the mesa libraries
+  # linking fails because the build doesn't pull in the libGLU_combined libraries
   fltkhs = markBroken super.fltkhs;
   fltkhs-fluid-examples = dontDistribute super.fltkhs-fluid-examples;
 
   # We get lots of strange compiler errors during the test suite run.
   jsaddle = dontCheck super.jsaddle;
-
-  # tinc is a new build driver a la Stack that's not yet available from Hackage.
-  tinc = self.callPackage ../tools/haskell/tinc { inherit (pkgs) cabal-install cabal2nix; };
 
   # Tools that use gtk2hs-buildtools now depend on them in a custom-setup stanza
   cairo = addBuildTool super.cairo self.gtk2hs-buildtools;
@@ -647,9 +662,6 @@ self: super: {
     if pkgs.stdenv.isDarwin
     then appendConfigureFlag super.gtk "-fhave-quartz-gtk"
     else super.gtk;
-
-  # It makes no sense to have intero-nix-shim in Hackage, so we publish it here only.
-  intero-nix-shim = self.callPackage ../tools/haskell/intero-nix-shim {};
 
   # vaultenv is not available from Hackage.
   vaultenv = self.callPackage ../tools/haskell/vaultenv { };
@@ -821,9 +833,6 @@ self: super: {
   fluid-idl-http-client = markBroken super.fluid-idl-http-client;
   fluid-idl-scotty = markBroken super.fluid-idl-scotty;
 
-  # Build with gi overloading feature disabled.
-  ltk = super.ltk.overrideScope (self: super: { haskell-gi-overloading = self.haskell-gi-overloading_0_0; });
-
   # missing dependencies: Glob >=0.7.14 && <0.8, data-fix ==0.0.4
   stack2nix = doJailbreak super.stack2nix;
 
@@ -837,7 +846,7 @@ self: super: {
       rev = "8b79823c32e234c161baec67fdf7907952ca62b8";
       sha256 = "0hyrcyssclkdfcw2kgcark8jl869snwnbrhr9k0a9sbpk72wp7nz";
     };
-  }).override { language-c = self.language-c_0_7_0; };
+  });
 
   # Needs pginit to function and pgrep to verify.
   tmp-postgres = overrideCabal super.tmp-postgres (drv: {
@@ -847,9 +856,6 @@ self: super: {
 
   # https://github.com/fpco/stackage/issues/3126
   stack = doJailbreak super.stack;
-
-  # Hoogle needs a newer version than lts-10 provides.
-  hoogle = super.hoogle.override { haskell-src-exts = self.haskell-src-exts_1_20_1; };
 
   # These packages depend on each other, forming an infinite loop.
   scalendar = markBroken (super.scalendar.override { SCalendar = null; });
@@ -875,6 +881,7 @@ self: super: {
   cryptohash-sha1 = doJailbreak super.cryptohash-sha1;
   cryptohash-md5 = doJailbreak super.cryptohash-md5;
   text-short = doJailbreak super.text-short;
+  gitHUD = dontCheck super.gitHUD;
 
   # https://github.com/aisamanra/config-ini/issues/12
   config-ini = dontCheck super.config-ini;
@@ -924,21 +931,79 @@ self: super: {
   haddock-api = super.haddock-api.override { haddock-library = self.haddock-library_1_4_4; };
 
   # Jailbreak "unix-compat >=0.1.2 && <0.5".
-  darcs = overrideCabal super.darcs (drv: { preConfigure = "sed -i -e 's/unix-compat .*,/unix-compat,/' darcs.cabal"; });
+  darcs = overrideCabal super.darcs (drv: { preConfigure = "sed -i -e 's/unix-compat .*,/unix-compat,/' -e 's/fgl .*,/fgl,/' darcs.cabal"; });
 
   # https://github.com/Twinside/Juicy.Pixels/issues/149
   JuicyPixels = dontHaddock super.JuicyPixels;
 
-  # armv7l fixes.
-  happy = if pkgs.stdenv.isArm then dontCheck super.happy else super.happy; # Similar to https://ghc.haskell.org/trac/ghc/ticket/13062
-  hashable = if pkgs.stdenv.isArm then dontCheck super.hashable else super.hashable; # https://github.com/tibbe/hashable/issues/95
-  servant-docs = if pkgs.stdenv.isArm then dontCheck super.servant-docs else super.servant-docs;
-  servant-swagger = if pkgs.stdenv.isArm then dontCheck super.servant-swagger else super.servant-swagger;
-  swagger2 = if pkgs.stdenv.isArm then dontHaddock (dontCheck super.swagger2) else super.swagger2;
+  # aarch64 and armv7l fixes.
+  happy = if (pkgs.stdenv.hostPlatform.isArm || pkgs.stdenv.hostPlatform.isAarch64) then dontCheck super.happy else super.happy; # Similar to https://ghc.haskell.org/trac/ghc/ticket/13062
+  hashable = if (pkgs.stdenv.hostPlatform.isArm || pkgs.stdenv.hostPlatform.isAarch64) then dontCheck super.hashable else super.hashable; # https://github.com/tibbe/hashable/issues/95
+  servant-docs = if (pkgs.stdenv.hostPlatform.isArm || pkgs.stdenv.hostPlatform.isAarch64) then dontCheck super.servant-docs else super.servant-docs;
+  servant-swagger = if (pkgs.stdenv.hostPlatform.isArm || pkgs.stdenv.hostPlatform.isAarch64) then dontCheck super.servant-swagger else super.servant-swagger;
+  swagger2 = if (pkgs.stdenv.hostPlatform.isArm || pkgs.stdenv.hostPlatform.isAarch64) then dontHaddock (dontCheck super.swagger2) else super.swagger2;
 
   # Tries to read a file it is not allowed to in the test suite
   load-env = dontCheck super.load-env;
 
-  # Sporadically OOMs even with 16G
-  ChasingBottoms = dontCheck super.ChasingBottoms;
+  # Add support for https://github.com/haskell-hvr/multi-ghc-travis.
+  multi-ghc-travis = self.callPackage ../tools/haskell/multi-ghc-travis {};
+
+  # https://github.com/yesodweb/Shelly.hs/issues/162
+  shelly = dontCheck super.shelly;
+
+  # Support ansi-terminal 0.7.x.
+  cabal-plan = appendPatch super.cabal-plan (pkgs.fetchpatch {
+    url = "https://github.com/haskell-hvr/cabal-plan/pull/16.patch";
+    sha256 = "0i889zs46wn09d7iqdy99201zaqxb175cfs8jz2zi3mv4ywx3a0l";
+  });
+
+  # Copy hledger man pages from data directory into the proper place. This code
+  # should be moved into the cabal2nix generator.
+  hledger = overrideCabal super.hledger (drv: {
+    postInstall = ''
+      for i in $(seq 1 9); do
+        for j in $data/share/${self.ghc.name}/*-${self.ghc.name}/*/*.$i $data/share/${self.ghc.name}/*-${self.ghc.name}/*/.otherdocs/*.$i; do
+          mkdir -p $out/share/man/man$i
+          cp $j $out/share/man/man$i/
+        done
+      done
+      mkdir -p $out/share/info
+      cp $data/share/${self.ghc.name}/*-${self.ghc.name}/*/*.info $out/share/info/
+    '';
+  });
+  hledger-ui = overrideCabal super.hledger-ui (drv: {
+    postInstall = ''
+      for i in $(seq 1 9); do
+        for j in $data/share/${self.ghc.name}/*-${self.ghc.name}/*/*.$i $data/share/${self.ghc.name}/*-${self.ghc.name}/*/.otherdocs/*.$i; do
+          mkdir -p $out/share/man/man$i
+          cp $j $out/share/man/man$i/
+        done
+      done
+      mkdir -p $out/share/info
+      cp $data/share/${self.ghc.name}/*-${self.ghc.name}/*/*.info $out/share/info/
+    '';
+  });
+  hledger-web = overrideCabal super.hledger-web (drv: {
+    postInstall = ''
+      for i in $(seq 1 9); do
+        for j in $data/share/${self.ghc.name}/*-${self.ghc.name}/*/*.$i $data/share/${self.ghc.name}/*-${self.ghc.name}/*/.otherdocs/*.$i; do
+          mkdir -p $out/share/man/man$i
+          cp $j $out/share/man/man$i/
+        done
+      done
+      mkdir -p $out/share/info
+      cp $data/share/${self.ghc.name}/*-${self.ghc.name}/*/*.info $out/share/info/
+    '';
+  });
+
+  # https://github.com/nick8325/twee/pull/1
+  twee-lib = dontHaddock super.twee-lib;
+
+  # Needs older hlint
+  hpio = dontCheck super.hpio;
+
+  # https://github.com/fpco/inline-c/issues/72
+  inline-c = dontCheck super.inline-c;
+
 }

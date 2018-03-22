@@ -3,8 +3,6 @@
 , langObjC ? targetPlatform.isDarwin
 , langObjCpp ? targetPlatform.isDarwin
 , langJava ? false
-, langAda ? false
-, langVhdl ? false
 , langGo ? false
 , profiledCompiler ? false
 , staticCompiler ? false
@@ -21,13 +19,11 @@
 , libXrender ? null, xproto ? null, renderproto ? null, xextproto ? null
 , libXrandr ? null, libXi ? null, inputproto ? null, randrproto ? null
 , x11Support ? langJava
-, gnatboot ? null
 , enableMultilib ? false
 , enablePlugin ? hostPlatform == buildPlatform # Whether to support user-supplied plug-ins
 , name ? "gcc"
 , libcCross ? null
 , crossStageStatic ? false
-, gnat ? null
 , libpthread ? null, libpthreadCross ? null  # required for GNU/Hurd
 , stripped ? true
 , gnused ? null
@@ -40,8 +36,6 @@
 assert langJava     -> zip != null && unzip != null
                        && zlib != null && boehmgc != null
                        && perl != null;  # for `--enable-java-home'
-assert langAda      -> gnatboot != null;
-assert langVhdl     -> gnat != null;
 
 # LTO needs libelf and zlib.
 assert libelf != null -> zlib != null;
@@ -66,9 +60,6 @@ let version = "6.4.0";
       [ ../use-source-date-epoch.patch ]
       ++ optional (targetPlatform != hostPlatform) ../libstdc++-target.patch
       ++ optional noSysDirs ../no-sys-dirs.patch
-      # The GNAT Makefiles did not pay attention to CFLAGS_FOR_TARGET for its
-      # target libraries and tools.
-      ++ optional langAda ../gnat-cflags.patch
       ++ optional langFortran ../gfortran-driving.patch
       ++ [ ../struct-ucontext.patch ../struct-sigaltstack.patch ] # glibc-2.26
       ++ optional langJava [ ../struct-ucontext-libjava.patch ] # glibc-2.26
@@ -142,6 +133,9 @@ let version = "6.4.0";
         "--disable-shared"
         "--disable-libatomic"  # libatomic requires libc
         "--disable-decimal-float" # libdecnumber requires libc
+        # maybe only needed on musl, PATH_MAX
+        # https://github.com/richfelker/musl-cross-make/blob/0867cdf300618d1e3e87a0a939fa4427207ad9d7/litecross/Makefile#L62
+        "--disable-libmpx"
       ] else [
         (if crossDarwin then "--with-sysroot=${getLib libcCross}/share/sysroot"
          else                "--with-headers=${getDev libcCross}/include")
@@ -158,13 +152,15 @@ let version = "6.4.0";
           # To keep ABI compatibility with upstream mingw-w64
           "--enable-fully-dynamic-string"
         ] else
-          optionals (targetPlatform.libc == "uclibc") [
+          optionals (targetPlatform.libc == "uclibc" || targetPlatform.libc == "musl") [
             # libsanitizer requires netrom/netrom.h which is not
             # available in uclibc.
             "--disable-libsanitizer"
             # In uclibc cases, libgomp needs an additional '-ldl'
             # and as I don't know how to pass it, I disable libgomp.
             "--disable-libgomp"
+            # musl at least, disable: https://git.buildroot.net/buildroot/commit/?id=873d4019f7fb00f6a80592224236b3ba7d657865
+            "--disable-libmpx"
           ] ++ [
           "--enable-threads=posix"
           "--enable-nls"
@@ -257,15 +253,22 @@ stdenv.mkDerivation ({
       let
         libc = if libcCross != null then libcCross else stdenv.cc.libc;
       in
-        '' echo "fixing the \`GLIBC_DYNAMIC_LINKER' and \`UCLIBC_DYNAMIC_LINKER' macros..."
+        (
+        '' echo "fixing the \`GLIBC_DYNAMIC_LINKER', \`UCLIBC_DYNAMIC_LINKER', and \`MUSL_DYNAMIC_LINKER' macros..."
            for header in "gcc/config/"*-gnu.h "gcc/config/"*"/"*.h
            do
-             grep -q LIBC_DYNAMIC_LINKER "$header" || continue
+             grep -q _DYNAMIC_LINKER "$header" || continue
              echo "  fixing \`$header'..."
              sed -i "$header" \
-                 -e 's|define[[:blank:]]*\([UCG]\+\)LIBC_DYNAMIC_LINKER\([0-9]*\)[[:blank:]]"\([^\"]\+\)"$|define \1LIBC_DYNAMIC_LINKER\2 "${libc.out}\3"|g'
+                 -e 's|define[[:blank:]]*\([UCG]\+\)LIBC_DYNAMIC_LINKER\([0-9]*\)[[:blank:]]"\([^\"]\+\)"$|define \1LIBC_DYNAMIC_LINKER\2 "${libc.out}\3"|g' \
+                 -e 's|define[[:blank:]]*MUSL_DYNAMIC_LINKER\([0-9]*\)[[:blank:]]"\([^\"]\+\)"$|define MUSL_DYNAMIC_LINKER\1 "${libc.out}\2"|g'
            done
         ''
+        + stdenv.lib.optionalString (targetPlatform.libc == "musl")
+        ''
+            sed -i gcc/config/linux.h -e '1i#undef LOCAL_INCLUDE_DIR'
+        ''
+        )
     else null;
 
   # TODO(@Ericson2314): Make passthru instead. Weird to avoid mass rebuild,
@@ -294,8 +297,6 @@ stdenv.mkDerivation ({
     ++ (optionals langJava [ boehmgc zip unzip ])
     ++ (optionals javaAwtGtk ([ gtk2 libart_lgpl ] ++ xlibs))
     ++ (optionals (targetPlatform != hostPlatform) [targetPackages.stdenv.cc.bintools])
-    ++ (optionals langAda [gnatboot])
-    ++ (optionals langVhdl [gnat])
 
     # The builder relies on GNU sed (for instance, Darwin's `sed' fails with
     # "-i may not be used with stdin"), and `stdenvNative' doesn't provide it.
@@ -351,8 +352,6 @@ stdenv.mkDerivation ({
           ++ optional langCC       "c++"
           ++ optional langFortran  "fortran"
           ++ optional langJava     "java"
-          ++ optional langAda      "ada"
-          ++ optional langVhdl     "vhdl"
           ++ optional langGo       "go"
           ++ optional langObjC     "objc"
           ++ optional langObjCpp   "obj-c++"
@@ -385,9 +384,6 @@ stdenv.mkDerivation ({
     optional javaAwtGtk "--enable-java-awt=gtk" ++
     optional (langJava && javaAntlr != null) "--with-antlr-jar=${javaAntlr}" ++
 
-    # Ada
-    optional langAda "--enable-libada" ++
-
     platformFlags ++
     optional (targetPlatform != hostPlatform) crossConfigureFlags ++
     optional (!bootstrap) "--disable-bootstrap" ++
@@ -399,6 +395,7 @@ stdenv.mkDerivation ({
       # On Illumos/Solaris GNU as is preferred
       "--with-gnu-as" "--without-gnu-ld"
     ]
+    ++ optional (targetPlatform == hostPlatform && targetPlatform.libc == "musl") "--disable-libsanitizer"
   ;
 
   targetConfig = if targetPlatform != hostPlatform then targetPlatform.config else null;
@@ -479,7 +476,7 @@ stdenv.mkDerivation ({
     ]);
 
   passthru =
-    { inherit langC langCC langObjC langObjCpp langAda langFortran langVhdl langGo version; isGNU = true; };
+    { inherit langC langCC langObjC langObjCpp langFortran langGo version; isGNU = true; };
 
   inherit enableParallelBuilding enableMultilib;
 
@@ -502,12 +499,10 @@ stdenv.mkDerivation ({
 
     maintainers = with stdenv.lib.maintainers; [ viric peti ];
 
-    # gnatboot is not available out of linux platforms, so we disable the darwin build
-    # for the gnat (ada compiler).
     platforms =
       stdenv.lib.platforms.linux ++
       stdenv.lib.platforms.freebsd ++
-      optionals (langAda == false) stdenv.lib.platforms.darwin;
+      stdenv.lib.platforms.darwin;
   };
 }
 

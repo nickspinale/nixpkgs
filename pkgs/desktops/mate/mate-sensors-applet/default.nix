@@ -1,14 +1,12 @@
-{ stdenv, fetchurl, pkgconfig, intltool, itstool, gtk3, libxml2, libxslt, libatasmart, libnotify, dbus_glib, lm_sensors, mate-panel, hicolor_icon_theme, wrapGAppsHook }:
+{ stdenv, fetchurl, pkgconfig, intltool, itstool, gtk3, libxml2, libxslt, libatasmart, libnotify, dbus-glib, lm_sensors, mate, hicolor-icon-theme, wrapGAppsHook }:
 
 stdenv.mkDerivation rec {
   name = "mate-sensors-applet-${version}";
-  version = "${major-ver}.${minor-ver}";
-  major-ver = "1.18";
-  minor-ver = "3";
+  version = "1.20.1";
 
   src = fetchurl {
-    url = "http://pub.mate-desktop.org/releases/${major-ver}/${name}.tar.xz";
-    sha256 = "1nm68rhp73kgvs7wwsgs5zbvq3lzaanl5s5nnn28saiknjbz1mcx";
+    url = "http://pub.mate-desktop.org/releases/${mate.getRelease version}/${name}.tar.xz";
+    sha256 = "0lnr3jjq30zw1i2rv5n69dhsa3x39lc91xcgbj4vyj1rxj9ff05x";
   };
 
   nativeBuildInputs = [
@@ -25,10 +23,10 @@ stdenv.mkDerivation rec {
     libxslt
     libatasmart
     libnotify
-    dbus_glib
+    dbus-glib
     lm_sensors
-    mate-panel
-    hicolor_icon_theme
+    mate.mate-panel
+    hicolor-icon-theme
   ];
 
   meta = with stdenv.lib; {

@@ -1,6 +1,5 @@
-{ stdenv, lib, makeDesktopItem, makeWrapper, lndir
+{ stdenv, lib, makeDesktopItem, makeWrapper
 , vimUtils
-, neovim
 , bundlerEnv, ruby
 , pythonPackages
 , python3Packages
@@ -26,7 +25,7 @@ let
     name = "neovim-ruby-env";
     gemdir = ./ruby_provider;
     postBuild = ''
-      ln -s ${ruby}/bin/* $out/bin
+      ln -sf ${ruby}/bin/* $out/bin
     '';
   };
 

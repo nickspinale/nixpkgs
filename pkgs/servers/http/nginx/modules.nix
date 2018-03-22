@@ -2,13 +2,17 @@
 
 {
   brotli = {
-    src = fetchFromGitHub {
-      owner = "google";
+    src = let gitsrc = pkgs.fetchFromGitHub {
+      owner = "eustas";
       repo = "ngx_brotli";
-      rev = "bfd2885b2da4d763fed18f49216bb935223cd34b";
-      sha256 = "04yx1n0wi3l2x37jd1ynl9951qxkn8xp42yv0mfp1qz9svips81n";
-      fetchSubmodules = true;
-    };
+      rev = "6a1174446f5a866d3d13615dd2824177570f0a69";
+      sha256 = "148xfh6w1wgql2jj922ryiddrs93dyacs903j2hnil67cpia45p6";
+    }; in pkgs.runCommandNoCC "ngx_brotli-src" {} ''
+      cp -a ${gitsrc} $out
+      substituteInPlace $out/config \
+        --replace /usr/local ${lib.getDev pkgs.brotli}
+    '';
+    inputs = [ pkgs.brotli ];
   };
 
   rtmp ={
@@ -152,8 +156,8 @@
       moduleSrc = fetchFromGitHub {
         owner  = "pagespeed";
         repo   = "ngx_pagespeed";
-        rev    = "v${version}-beta";
-        sha256 = "176skx7zmi7islc1hmdxcynix4lkvgmr78lknn13s9gskc7qi25w";
+        rev    = "v${version}-stable";
+        sha256 = "0ry7vmkb2bx0sspl1kgjlrzzz6lbz07313ks2lr80rrdm2zb16wp";
       };
 
       ngx_pagespeed = pkgs.runCommand

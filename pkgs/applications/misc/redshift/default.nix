@@ -1,6 +1,6 @@
 { stdenv, fetchFromGitHub, fetchurl, autoconf, automake, gettext, intltool
 , libtool, pkgconfig, wrapGAppsHook, wrapPython, geoclue2, gobjectIntrospection
-, gtk3, python, pygobject3, pyxdg, libdrm, libxcb }:
+, gtk3, python, pygobject3, pyxdg, libdrm, libxcb, hicolor-icon-theme }:
 
 stdenv.mkDerivation rec {
   name = "redshift-${version}";
@@ -36,11 +36,13 @@ stdenv.mkDerivation rec {
     libdrm
     libxcb
     python
+    hicolor-icon-theme
   ];
 
   pythonPath = [ pygobject3 pyxdg ];
 
   preConfigure = "./bootstrap";
+
   postFixup = "wrapPythonPrograms";
 
   enableParallelBuilding = true;
@@ -58,6 +60,6 @@ stdenv.mkDerivation rec {
     license = licenses.gpl3Plus;
     homepage = http://jonls.dk/redshift;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ mornfall yegortimoshenko ];
+    maintainers = with maintainers; [ yegortimoshenko ];
   };
 }

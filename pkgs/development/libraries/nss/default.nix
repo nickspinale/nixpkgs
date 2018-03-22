@@ -1,6 +1,12 @@
-{ stdenv, fetchurl, nspr, perl, zlib, sqlite }:
+{ stdenv, fetchurl, nspr, perl, zlib, sqlite, fixDarwinDylibNames }:
 
 let
+
+  # Fix aarch64 build, shouldn't be needed after 3.35
+  aarch64Patch = fetchurl {
+    url = https://hg.mozilla.org/projects/nss/raw-rev/74e679158d1b;
+    sha256 = "1lhs4h32mb2al3z461yylk227nid769di1pdjr7p0kqm2z1qm3jq";
+  };
 
   nssPEM = fetchurl {
     url = http://dev.gentoo.org/~polynomial-c/mozilla/nss-3.15.4-pem-support-20140109.patch.xz;
@@ -9,19 +15,22 @@ let
 
 in stdenv.mkDerivation rec {
   name = "nss-${version}";
-  version = "3.33";
+  version = "3.35";
 
   src = fetchurl {
-    url = "mirror://mozilla/security/nss/releases/NSS_3_33_RTM/src/${name}.tar.gz";
-    sha256 = "1r44qa4j7sri50mxxbnrpm6fxprwrhv76whi7bfq73j06syxmw4q";
+    url = "mirror://mozilla/security/nss/releases/NSS_3_35_RTM/src/${name}.tar.gz";
+    sha256 = "1ypn68z9ncbbshi3184ywrhx5i846lyd72gps1grzqzdkgh7s4pl";
   };
 
-  buildInputs = [ perl zlib sqlite ];
+  buildInputs = [ perl zlib sqlite ]
+    ++ stdenv.lib.optional stdenv.isDarwin fixDarwinDylibNames;
 
   propagatedBuildInputs = [ nspr ];
 
   prePatch = ''
     xz -d < ${nssPEM} | patch -p1
+  '' + stdenv.lib.optionalString stdenv.isAarch64 ''
+      (cd nss && patch -p1 < ${aarch64Patch})
   '';
 
   patches =
@@ -32,6 +41,10 @@ in stdenv.mkDerivation rec {
     ];
 
   patchFlags = "-p0";
+
+  postPatch = stdenv.lib.optionalString stdenv.isDarwin ''
+    substituteInPlace nss/coreconf/Darwin.mk --replace '@executable_path/$(notdir $@)' "$out/lib/\$(notdir \$@)"
+  '';
 
   outputs = [ "out" "dev" "tools" ];
 

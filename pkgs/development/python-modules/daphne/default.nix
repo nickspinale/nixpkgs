@@ -1,18 +1,30 @@
-{ stdenv, buildPythonPackage, fetchPypi,
-  asgiref, autobahn, twisted, hypothesis
+{ stdenv, buildPythonPackage, isPy3k, fetchFromGitHub
+, asgiref, autobahn, twisted, pytestrunner
+, hypothesis, pytest, pytest-asyncio
 }:
 buildPythonPackage rec {
   pname = "daphne";
-  name = "${pname}-${version}";
-  version = "1.4.2";
+  version = "2.1.0";
 
-  src = fetchPypi {
-    inherit pname version;
-    sha256 = "302725f223853b05688f28c361e050f8db9568b1ce27340c76272c26b49e6d72";
+  disabled = !isPy3k;
+
+  src = fetchFromGitHub {
+    owner = "django";
+    repo = pname;
+    rev = version;
+    sha256 = "1lbpn0l796ar77amqy8dap30zxmsn6as8y2lbmp4lk8m9awscwi8";
   };
 
-  buildInputs = [ hypothesis ];
+  nativeBuildInputs = [ pytestrunner ];
+
   propagatedBuildInputs = [ asgiref autobahn twisted ];
+
+  checkInputs = [ hypothesis pytest pytest-asyncio ];
+
+  checkPhase = ''
+    # Other tests fail, seems to be due to filesystem access
+    py.test -k "test_cli or test_utils"
+  '';
 
   meta = with stdenv.lib; {
     description = "Django ASGI (HTTP/WebSocket) server";

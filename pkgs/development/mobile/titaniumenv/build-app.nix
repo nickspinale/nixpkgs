@@ -2,7 +2,7 @@
 { name, src, preBuild ? "", target, androidPlatformVersions ? [ "25" ], androidAbiVersions ? [ "armeabi" "armeabi-v7a" ], tiVersion ? null
 , release ? false, androidKeyStore ? null, androidKeyAlias ? null, androidKeyStorePassword ? null
 , iosMobileProvisioningProfile ? null, iosCertificateName ? null, iosCertificate ? null, iosCertificatePassword ? null, iosVersion ? "11.2"
-, enableWirelessDistribution ? false, installURL ? null
+, enableWirelessDistribution ? false, iosBuildStore ? false, installURL ? null
 }:
 
 assert (release && target == "android") -> androidKeyStore != null && androidKeyAlias != null && androidKeyStorePassword != null;
@@ -15,39 +15,17 @@ let
     abiVersions = androidAbiVersions;
     useGoogleAPIs = true;
   };
-  
+
   deleteKeychain = ''
     security default-keychain -s login.keychain
     security delete-keychain $keychainName
     rm -f $HOME/lock-keychain
   '';
-  
-  # On macOS, the java executable shows an -unoffical postfix in the version
-  # number. This confuses the build script's version detector.
-  # We fix this by creating a wrapper that strips it out of the output.
-  
-  javaVersionFixWrapper = stdenv.mkDerivation {
-    name = "javaVersionFixWrapper";
-    buildCommand = ''
-      mkdir -p $out/bin
-      cat > $out/bin/javac <<EOF
-      #! ${stdenv.shell} -e
-      
-      if [ "\$1" = "-version" ]
-      then
-          ${jdk}/bin/javac "\$@" 2>&1 | sed "s|-unofficial||" | sed "s|-u60|_60|" >&2
-      else
-          exec ${jdk}/bin/javac "\$@"
-      fi
-      EOF
-      chmod +x $out/bin/javac
-    '';
-  };
 in
 stdenv.mkDerivation {
   name = stdenv.lib.replaceChars [" "] [""] name;
   inherit src;
-  
+
   buildInputs = [ nodejs titanium alloy jdk python which file ] ++ stdenv.lib.optional (stdenv.system == "x86_64-darwin") xcodewrapper;
   
   buildPhase = ''
@@ -74,19 +52,19 @@ stdenv.mkDerivation {
     
     ${if target == "android" then
         ''
-          ${stdenv.lib.optionalString (stdenv.system == "x86_64-darwin") ''
-            # Hack to make version detection work with OpenJDK on macOS
-            export PATH=${javaVersionFixWrapper}/bin:$PATH
-            export JAVA_HOME=${javaVersionFixWrapper}
-            javac -version
-          ''}
-
           titanium config --config-file $TMPDIR/config.json --no-colors android.sdkPath ${androidsdkComposition}/libexec
 
           export PATH=$(echo ${androidsdkComposition}/libexec/tools):$(echo ${androidsdkComposition}/libexec/build-tools/android-*):$PATH
-          
+          export GRADLE_USER_HOME=$TMPDIR/gradle
+
           ${if release then
-            ''titanium build --config-file $TMPDIR/config.json --no-colors --force --platform android --target dist-playstore --keystore ${androidKeyStore} --alias ${androidKeyAlias} --store-password ${androidKeyStorePassword} --output-dir $out''
+            ''
+              ${stdenv.lib.optionalString stdenv.isDarwin ''
+                # Signing the app does not work with OpenJDK on macOS, use host SDK instead
+                export JAVA_HOME="$(/usr/libexec/java_home -v 1.8)"
+              ''}
+              titanium build --config-file $TMPDIR/config.json --no-colors --force --platform android --target dist-playstore --keystore ${androidKeyStore} --alias ${androidKeyAlias} --store-password ${androidKeyStorePassword} --output-dir $out
+            ''
           else
             ''titanium build --config-file $TMPDIR/config.json --no-colors --force --platform android --target emulator --build-only -B foo --output $out''}
         ''
@@ -145,7 +123,7 @@ stdenv.mkDerivation {
               security default-keychain -s $keychainName
 
               # Do the actual build
-              titanium build --config-file $TMPDIR/config.json --force --no-colors --platform ios --target dist-adhoc --pp-uuid $provisioningId --distribution-name "${iosCertificateName}" --keychain $HOME/Library/Keychains/$keychainName-db --device-family universal --ios-version ${iosVersion} --output-dir $out
+              titanium build --config-file $TMPDIR/config.json --force --no-colors --platform ios --target ${if iosBuildStore then "dist-appstore" else "dist-adhoc"} --pp-uuid $provisioningId --distribution-name "${iosCertificateName}" --keychain $HOME/Library/Keychains/$keychainName-db --device-family universal --ios-version ${iosVersion} --output-dir $out
             
               # Remove our generated keychain
               ${deleteKeychain}

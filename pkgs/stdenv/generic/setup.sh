@@ -769,7 +769,7 @@ _defaultUnpack() {
         # We can't preserve hardlinks because they may have been
         # introduced by store optimization, which might break things
         # in the build.
-        cp -pr --reflink=auto "$fn" "$(stripHash "$fn")"
+        cp -pr --reflink=auto -- "$fn" "$(stripHash "$fn")"
 
     else
 
@@ -866,7 +866,7 @@ unpackPhase() {
     # necessary when sources have been copied from other store
     # locations.
     if [ "${dontMakeSourcesWritable:-0}" != 1 ]; then
-        chmod -R u+w "$sourceRoot"
+        chmod -R u+w -- "$sourceRoot"
     fi
 
     runHook postUnpack
