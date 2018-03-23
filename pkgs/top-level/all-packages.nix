@@ -6521,7 +6521,7 @@ with pkgs;
 
   llvmPackages = recurseIntoAttrs llvmPackages_5;
 
-  llvmPackagesSelf = llvmPackages_34.override {
+  llvmPackagesSelf = llvmPackages_5.override {
     stdenv = libcxxStdenv;
   };
 

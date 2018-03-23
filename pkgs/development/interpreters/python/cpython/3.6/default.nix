@@ -54,7 +54,7 @@ in stdenv.mkDerivation {
     sha256 = "1fna7g8jxzl4kd2pqmmqhva5724c5m920x3fsrpsgskaylmr76qm";
   };
 
-  NIX_LDFLAGS = optionalString stdenv.isLinux "-lgcc_s";
+  NIX_LDFLAGS = optionalString (stdenv.isLinux && !stdenv.hostPlatform.isMusl) "-lgcc_s";
 
   # Determinism: The interpreter is patched to write null timestamps when compiling python files.
   # This way python doesn't try to update them when we freeze timestamps in nix store.
