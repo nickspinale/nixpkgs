@@ -8,9 +8,9 @@ let
     inherit (gnome2) GConf gnome_vfs;
   };
   latestVersion = {
-    version = "3.2.0.7"; # "Android Studio 3.2 Canary 8"
-    build = "173.4670218";
-    sha256Hash = "0p1lls1pkhji8x0p32clsiq3ng64jhqv2vxkhdkmsbh5p4dc1g21";
+    version = "3.2.0.9"; # "Android Studio 3.2 Canary 10"
+    build = "181.4705630";
+    sha256Hash = "07xf00f0wvrk576iaqn7qpcpgar432n6q3jlgpslhm4m1cww3sww";
   };
 in rec {
   # Old alias
