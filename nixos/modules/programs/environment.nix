@@ -16,13 +16,6 @@ in
 
   config = {
 
-    environment.variables =
-      { NIXPKGS_CONFIG = "/etc/nix/nixpkgs-config.nix";
-        PAGER = mkDefault "less -R";
-        EDITOR = mkDefault "nano";
-        XCURSOR_PATH = [ "$HOME/.icons" ];
-      };
-
     environment.profiles =
       [ "$HOME/.nix-profile"
         "/nix/var/nix/profiles/default"
