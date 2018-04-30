@@ -107,7 +107,9 @@ let
     stdenv.lib.optionalString isCross (" " + stdenv.lib.concatStringsSep " " crossCabalFlags);
 
   defaultConfigureFlags = [
-    "--verbose" "--prefix=$out" "--libdir=\\$prefix/lib/\\$compiler" "--libsubdir=\\$pkgid"
+    "--verbose" "--prefix=$out"
+    "--libdir=\\$prefix/lib/${if isHaLVM then "HaLVM-${ghc.version}" else "\\$compiler"}"
+    "--libsubdir=\\$pkgid"
     "--with-gcc=$CC" # Clang won't work without that extra information.
     "--package-db=$packageConfDir"
     (optionalString (enableSharedExecutables && stdenv.isLinux) "--ghc-option=-optl=-Wl,-rpath=$out/lib/${ghc.name}/${pname}-${version}")
