@@ -149,9 +149,6 @@ callPackage (import ./generic.nix (rec {
     ++ optional (withOVMF) "--with-system-ovmf=${OVMF.fd}/FV/OVMF.fd"
     ++ optional (withInternalOVMF) "--enable-ovmf";
 
-  # makeFlags = [ "DEBUG=Y" ];
-  # makeFlags = [ "debug=y" ];
-
   patches = with xsa; flatten [
     # XSA_231 to XSA-251 are fixed in 4.8.3 (verified with git log)
     XSA_252_49
@@ -162,8 +159,6 @@ callPackage (import ./generic.nix (rec {
     XSA_256_48
     xenlockprofpatch
     xenpmdpatch
-  ] ++ [
-    ./debug.patch
   ];
 
   # Fix build on Glibc 2.24.
