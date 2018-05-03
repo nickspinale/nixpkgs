@@ -43,6 +43,8 @@ in lib.init bootStages ++ [
              then buildPackages.darwin.iosSdkPkgs.clang
            else if crossSystem.useAndroidPrebuilt
              then buildPackages.androidenv.androidndkPkgs.gcc
+           else if crossSystem.libc == null
+             then buildPackages.gccCrossStageStatic
            else buildPackages.gcc;
     };
   })

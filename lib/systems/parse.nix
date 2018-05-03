@@ -224,6 +224,8 @@ rec {
         then { cpu = elemAt l 0;                      kernel = "windows";  abi = "cygnus";   }
       else if elemAt l 1 == "gnu"
         then { cpu = elemAt l 0;                      kernel = "hurd";     abi = "gnu";      }
+      else if elemAt l 1 == "elf"
+        then { cpu = elemAt l 0;                      kernel = "none";                       }
       else   { cpu = elemAt l 0;                      kernel = elemAt l 1;                   };
     "3" = # Awkwards hacks, beware!
       if elemAt l 1 == "apple"
