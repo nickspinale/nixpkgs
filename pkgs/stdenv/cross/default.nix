@@ -44,7 +44,11 @@ in lib.init bootStages ++ [
            else if crossSystem.useAndroidPrebuilt
              then buildPackages.androidenv.androidndkPkgs.gcc
            else if crossSystem.libc == null
-             then buildPackages.gccCrossStageStatic
+             then (
+               assert localSystem.config == "x86_64-unknown-linux-gnu";
+               assert crossSystem.config == "x86_64-elf";
+               buildPackages.gccCrossFoo
+              )
            else buildPackages.gcc;
     };
   })

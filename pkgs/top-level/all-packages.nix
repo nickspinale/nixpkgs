@@ -6157,6 +6157,43 @@ with pkgs;
       libc = libcCross1;
   };
 
+  # gccCrossStageStaticFoo = gccCrossStageStatic;
+
+  gccCrossStageStaticFoo =
+    assert targetPlatform != buildPlatform;
+    let
+      binutils1 = wrapBintoolsWith {
+        bintools = binutils-unwrapped;
+        libc = null;
+      };
+    in wrapCCWith {
+      name = "gcc-cross-wrapper";
+      bintools = binutils1;
+      libc = null;
+      cc = gccFun {
+        inherit noSysDirs; # ?
+        enableShared = false;
+        crossStageStatic = true;
+        libcCross = null;
+        targetPackages.stdenv.cc.bintools = binutils1;
+      };
+  };
+
+  gccCrossFoo =
+    assert buildPlatform.config == "x86_64-unknown-linux-gnu";
+    assert hostPlatform.config == "x86_64-unknown-linux-gnu";
+    assert targetPlatform.config == "x86_64-elf";
+    wrapCCWith {
+      name = "gcc-cross-wrapper";
+      # cc = gccCrossStageStatic.cc;
+      cc = gccCrossStageStaticFoo.cc;
+      libc = targetPackages.syntholCross;
+      bintools = wrapBintoolsWith {
+        libc = targetPackages.syntholCross;
+        bintools = binutils-unwrapped;
+      };
+    };
+
   # Only needed for mingw builds
   gccCrossMingw2 = assert targetPlatform != buildPlatform; wrapCCWith {
     name = "gcc-cross-wrapper";
@@ -9034,6 +9071,10 @@ with pkgs;
   };
 
   muslCross = callPackage ../os-specific/linux/musl {
+    stdenv = crossLibcStdenv;
+  };
+
+  syntholCross = callPackage /home/nick/k/xenix/synthol.nix {
     stdenv = crossLibcStdenv;
   };
 
