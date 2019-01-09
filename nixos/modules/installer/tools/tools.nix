@@ -61,23 +61,37 @@ in
 
 {
 
-  options.system.nixos-generate-config.configuration = mkOption {
-    internal = true;
-    type = types.str;
-    description = ''
-      The NixOS module that <literal>nixos-generate-config</literal>
-      saves to <literal>/etc/nixos/configuration.nix</literal>.
+  options = {
 
-      This is an internal option. No backward compatibility is guaranteed.
-      Use at your own risk!
+    nix.installerTools = {
+      enable = mkOption {
+        default = true;
+        type = types.bool;
+        description = ''
+          Whether to include the NixOS installer tools.
+        '';
+      };
+    };
 
-      Note that this string gets spliced into a Perl script. The perl
-      variable <literal>$bootLoaderConfig</literal> can be used to
-      splice in the boot loader configuration.
-    '';
+    system.nixos-generate-config.configuration = mkOption {
+      internal = true;
+      type = types.str;
+      description = ''
+        The NixOS module that <literal>nixos-generate-config</literal>
+        saves to <literal>/etc/nixos/configuration.nix</literal>.
+
+        This is an internal option. No backward compatibility is guaranteed.
+        Use at your own risk!
+
+        Note that this string gets spliced into a Perl script. The perl
+        variable <literal>$bootLoaderConfig</literal> can be used to
+        splice in the boot loader configuration.
+      '';
+    };
+
   };
 
-  config = {
+  config = mkIf config.nix.installerTools.enable {
 
     system.nixos-generate-config.configuration = mkDefault ''
       # Edit this configuration file to define what should be installed on
