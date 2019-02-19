@@ -14,6 +14,14 @@ in
 
     nix.optimise = {
 
+      enable = mkOption {
+        default = true;
+        type = types.bool;
+        description = ''
+          Whether to enable the Nix store optimiser.
+        '';
+      };
+
       automatic = mkOption {
         default = false;
         type = types.bool;
@@ -36,7 +44,7 @@ in
 
   ###### implementation
 
-  config = {
+  config = mkIf cfg.enable {
 
     systemd.services.nix-optimise =
       { description = "Nix Store Optimiser";
