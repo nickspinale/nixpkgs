@@ -8,7 +8,7 @@ with lib;
 let
 
   requiredPackages = map (pkg: setPrio ((pkg.meta.priority or 5) + 3) pkg)
-    [ config.nix.package
+    (optional config.nix.enable config.nix.package ++ [
       pkgs.acl
       pkgs.attr
       pkgs.bashInteractive # bash with ncurses support
@@ -43,7 +43,7 @@ let
       pkgs.time
       pkgs.utillinux
       pkgs.which # 88K size
-    ];
+    ]);
 
 in
 

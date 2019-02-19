@@ -14,6 +14,14 @@ in
 
     nix.gc = {
 
+      enable = mkOption {
+        default = true;
+        type = types.bool;
+        description = ''
+          Whether to enable the Nix garbage collector.
+        '';
+      };
+
       automatic = mkOption {
         default = false;
         type = types.bool;
@@ -48,7 +56,7 @@ in
 
   ###### implementation
 
-  config = {
+  config = mkIf cfg.enable {
 
     systemd.services.nix-gc =
       { description = "Nix Garbage Collector";
