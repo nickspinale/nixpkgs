@@ -62,7 +62,7 @@ in ''
   done
   popd > /dev/null
 
-  ${replaceLnExeListWithWrapped "$out/bin" [ "thunar" "thunar-settings" ] [
+  ${replaceLnExeListWithWrapped "$out/bin" [ "thunar" "thunar-settings" "Thunar" ] [
     "--set THUNARX_MODULE_DIR \"${buildWithPlugins}/lib/thunarx-2\""
   ]}
 '')
