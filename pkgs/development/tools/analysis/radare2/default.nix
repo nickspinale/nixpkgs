@@ -72,13 +72,13 @@ let
         "GITTAP=${gittap}"
         "GITTIP=${gittip}"
         "RANLIB=${stdenv.cc.bintools.bintools}/bin/${stdenv.cc.bintools.targetPrefix}ranlib"
-      ];
+      ] ++ optional stdenv.isDarwin "HOST_CC=clang";
       configureFlags = [
         "--with-sysmagic"
         "--with-syszip"
         "--with-sysxxhash"
         "--with-openssl"
-      ];
+      ] ++ optional stdenv.isDarwin "--with-compiler=clang";
 
       enableParallelBuilding = true;
       depsBuildBuild = [ buildPackages.stdenv.cc ];
@@ -102,7 +102,7 @@ let
         homepage = http://radare.org/;
         license = stdenv.lib.licenses.gpl2Plus;
         maintainers = with stdenv.lib.maintainers; [ raskin makefu mic92 ];
-        platforms = with stdenv.lib.platforms; linux;
+        platforms = with stdenv.lib.platforms; linux ++ darwin;
         inherit version;
       };
   };
