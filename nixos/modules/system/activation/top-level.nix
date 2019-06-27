@@ -28,10 +28,7 @@ let
 
   systemBuilder =
     let
-      kernelPath = "${config.boot.kernelPackages.kernel}/" +
-        "${config.system.boot.loader.kernelFile}";
-      initrdPath = "${config.system.build.initialRamdisk}/" +
-        "${config.system.boot.loader.initrdFile}";
+      inherit (config.system.boot.loader) kernelPath initrdPath dtbsPath;
     in ''
       mkdir $out
 
@@ -180,6 +177,24 @@ in
       default = "";
       description = ''
         Id string of the used bootloader.
+      '';
+    };
+
+    system.boot.loader.kernelPath = mkOption {
+      type = with types; either path str;
+      default = "${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}";
+      defaultText = ''"''${config.boot.kernelPackages.kernel}/''${config.system.boot.loader.kernelFile}"'';
+      description = ''
+        Path of kernel.
+      '';
+    };
+
+    system.boot.loader.initrdPath = mkOption {
+      type = with types; either path str;
+      default = "${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}";
+      defaultText = ''"''${config.system.build.initialRamdisk}/''${config.system.boot.loader.initrdFile}"'';
+      description = ''
+        Path of initrd.
       '';
     };
 
