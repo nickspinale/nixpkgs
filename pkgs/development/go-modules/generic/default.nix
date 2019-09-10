@@ -36,17 +36,25 @@ let
 
   removeExpr = refs: ''remove-references-to ${lib.concatMapStrings (ref: " -t ${ref}") refs}'';
 
-  go-modules = go.stdenv.mkDerivation (let modArgs = {
+  env = {
+    inherit (go) GOOS GOARCH GO386 CGO_ENABLED;
+
+    GOHOSTARCH = go.GOHOSTARCH or null;
+    GOHOSTOS = go.GOHOSTOS or null;
+
+    GOARM = toString (stdenv.lib.intersectLists [(stdenv.hostPlatform.parsed.cpu.version or "")] ["5" "6" "7"]);
+
+    GO111MODULE = "on";
+  };
+
+  go-modules = stdenv.mkDerivation (let modArgs = env // {
     name = "${name}-go-modules";
 
     nativeBuildInputs = [ go git cacert ];
 
     inherit (args) src;
-    inherit (go) GOOS GOARCH;
 
     patches = args.patches or [];
-
-    GO111MODULE = "on";
 
     impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
       "GIT_PROXY_COMMAND" "SOCKS_SERVER"
@@ -84,12 +92,8 @@ let
     outputHash = modSha256;
   }; in modArgs // overrideModAttrs modArgs);
 
-  package = go.stdenv.mkDerivation (args // {
+  package = stdenv.mkDerivation (args // env // {
     nativeBuildInputs = [ removeReferencesTo go ] ++ nativeBuildInputs;
-
-    inherit (go) GOOS GOARCH;
-
-    GO111MODULE = "on";
 
     configurePhase = args.configurePhase or ''
       runHook preConfigure
