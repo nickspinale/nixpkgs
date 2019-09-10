@@ -25,7 +25,7 @@ stdenv.mkDerivation rec {
     patchShebangs src/tools
     patchShebangs bin
   '';
-  buildFlags = "-C src/ocaml-output";
+  # buildFlags = "-C src/ocaml-output";
 
   preInstall = ''
     mkdir -p $out/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib/fstarlib

@@ -7879,7 +7879,9 @@ in
 
   fsharp41 = callPackage ../development/compilers/fsharp41 { mono = mono6; };
 
-  fstar = callPackage ../development/compilers/fstar { };
+  fstar = callPackage ../development/compilers/fstar {
+    ocamlPackages = ocaml-ng.ocamlPackages;
+  };
 
   pyre = callPackage ../development/tools/pyre { };
 
