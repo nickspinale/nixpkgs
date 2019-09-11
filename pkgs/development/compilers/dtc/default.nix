@@ -10,6 +10,7 @@ stdenv.mkDerivation rec {
     sha256 = "075gj8bbahfdb8dlif3d2dpzjrkyf3bwbcmx96zpwhlgs0da8jxh";
   };
 
+  makeFlags = with stdenv; lib.optionals (hostPlatform != buildPlatform) [ "NO_PYTHON=1" ];
   nativeBuildInputs = [ flex bison pkgconfig swig which ];
   buildInputs = [ python2 ];
 
