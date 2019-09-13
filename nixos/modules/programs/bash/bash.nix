@@ -221,7 +221,7 @@ in
       "/share/bash-completion"
     ];
 
-    environment.systemPackages = optional cfg.enableCompletion
+    environment.systemPackages = optional (cfg.enableCompletion && config.nix.enable)
       pkgs.nix-bash-completions;
 
     environment.shells =

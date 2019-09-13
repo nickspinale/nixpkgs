@@ -8,7 +8,10 @@ with lib;
 let
 
   requiredPackages = map (pkg: setPrio ((pkg.meta.priority or 5) + 3) pkg)
-    (optional config.nix.enable config.nix.package ++ [
+    (optionals config.nix.enable [
+      config.nix.package
+      pkgs.nix-info
+    ] ++ [
       pkgs.acl
       pkgs.attr
       pkgs.bashInteractive # bash with ncurses support
@@ -33,7 +36,6 @@ let
       pkgs.nano
       pkgs.ncurses
       pkgs.netcat
-      pkgs.nix-info
       config.programs.ssh.package
       pkgs.perl
       pkgs.procps
