@@ -2,7 +2,7 @@
 
 runCommand "fc-cache"
   rec {
-    buildInputs = [ fontconfig.bin ];
+    nativeBuildInputs = [ fontconfig.bin ];
     preferLocalBuild = true;
     allowSubstitutes = false;
     passAsFile = [ "fontDirs" ];

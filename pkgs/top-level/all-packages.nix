@@ -10838,7 +10838,7 @@ in
       inherit fontconfig fontDirectories;
     };
 
-  makeFontsCache = let fontconfig_ = fontconfig; in {fontconfig ? fontconfig_, fontDirectories}:
+  makeFontsCache = let fontconfig_ = buildPackages.fontconfig; in {fontconfig ? fontconfig_, fontDirectories}:
     callPackage ../development/libraries/fontconfig/make-fonts-cache.nix {
       inherit fontconfig fontDirectories;
     };

@@ -26,13 +26,13 @@ let
   # back-supported fontconfig version and package
   # version is used for font cache generation
   supportVersion = "210";
-  supportPkg     = pkgs."fontconfig_${supportVersion}";
+  supportPkg     = pkgs.buildPackages."fontconfig_${supportVersion}";
 
   # latest fontconfig version and package
   # version is used for configuration folder name, /etc/fonts/VERSION/
   # note: format differs from supportVersion and can not be used with makeCacheConf
-  latestVersion  = pkgs.fontconfig.configVersion;
-  latestPkg      = pkgs.fontconfig;
+  latestVersion  = pkgs.buildPackages.fontconfig.configVersion;
+  latestPkg      = pkgs.buildPackages.fontconfig;
 
   # supported version fonts.conf
   supportFontsConf = pkgs.makeFontsConf { fontconfig = supportPkg; fontDirectories = config.fonts.fonts; };
@@ -51,8 +51,8 @@ let
                   then "fontconfig"
                   else "fontconfig_${version}";
       makeCache = fontconfig: pkgs.makeFontsCache { inherit fontconfig; fontDirectories = config.fonts.fonts; };
-      cache     = makeCache pkgs."${fcPackage}";
-      cache32   = makeCache pkgs.pkgsi686Linux."${fcPackage}";
+      cache     = makeCache pkgs.buildPackages."${fcPackage}";
+      cache32   = makeCache pkgs.pkgsi686Linux.buildPackages."${fcPackage}";
     in
     pkgs.writeText "fc-00-nixos-cache.conf" ''
       <?xml version='1.0'?>
