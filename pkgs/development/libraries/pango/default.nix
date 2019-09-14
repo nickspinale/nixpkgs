@@ -10,6 +10,7 @@ with stdenv.lib;
 let
   pname = "pango";
   version = "1.43.0";
+  isCross = stdenv.buildPlatform != stdenv.hostPlatform;
 in stdenv.mkDerivation rec {
   name = "${pname}-${version}";
 
@@ -19,7 +20,7 @@ in stdenv.mkDerivation rec {
   };
 
   # FIXME: docs fail on darwin
-  outputs = [ "bin" "dev" "out" ] ++ optional (!stdenv.isDarwin) "devdoc";
+  outputs = [ "bin" "dev" "out" ] ++ optional (!(stdenv.isDarwin || isCross)) "devdoc";
 
   nativeBuildInputs = [
     meson ninja
@@ -45,7 +46,8 @@ in stdenv.mkDerivation rec {
   ];
 
   mesonFlags = [
-    "-Denable_docs=${if stdenv.isDarwin then "false" else "true"}"
+    "-Denable_docs=${boolToString (!(stdenv.isDarwin || isCross))}"
+    "-Dgir=${boolToString (!isCross)}"
   ];
 
   enableParallelBuilding = true;
