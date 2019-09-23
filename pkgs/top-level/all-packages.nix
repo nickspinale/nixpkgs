@@ -23311,7 +23311,7 @@ in
   saw-tools = callPackage ../applications/science/logic/saw-tools {};
 
   spass = callPackage ../applications/science/logic/spass {
-    stdenv = gccStdenv;
+    stdenv = buildPackages.gccStdenv;
   };
 
   statverif = callPackage ../applications/science/logic/statverif {
