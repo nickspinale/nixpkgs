@@ -19,8 +19,7 @@ stdenv.mkDerivation rec {
     sha256 = "1xmwi2mqmipvg950gb0rhgprcps8gy8sjm8ic9rgy2qjlv22rcny";
   };
 
-  buildInputs = [ gfortran cmake ];
-  nativeBuildInputs = [ python2 ];
+  nativeBuildInputs = [ gfortran cmake python2 ];
 
   cmakeFlags = [
     "-DUSE_OPTIMIZED_BLAS=ON"
@@ -28,7 +27,7 @@ stdenv.mkDerivation rec {
   ]
   ++ (optional shared "-DBUILD_SHARED_LIBS=ON");
 
-  doCheck = ! shared;
+  doCheck = !shared;
 
   enableParallelBuilding = true;
 
