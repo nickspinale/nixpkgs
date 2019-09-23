@@ -1,16 +1,14 @@
 { stdenv, fetchFromGitHub, libusb1 }:
 
-let
-  version = "2018-03-27";
-  name = "rpiboot-unstable-${version}";
-in stdenv.mkDerivation {
-  inherit name;
+stdenv.mkDerivation {
+  pname = "rpiboot-unstable";
+  version = "2019-07-16";
 
   src = fetchFromGitHub {
     owner = "raspberrypi";
     repo = "usbboot";
-    rev = "fb86716935f2e820333b037a2ff93a338ad9b695";
-    sha256 = "163g7iw7kf6ra71adx6lf1xzf3kv20bppva15ljwn54jlah5mv98";
+    rev = "ecb8797287853acd0ac2ced40258f23a8990ceae";
+    sha256 = "0akwfwps8cdn7y4zmilbr1zvhxyp1h8yidzafg8qirhh5f9x0mf4";
   };
 
   nativeBuildInputs = [ libusb1 ];
