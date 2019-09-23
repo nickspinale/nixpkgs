@@ -9,7 +9,7 @@ stdenv.mkDerivation rec {
     sha256 = "1s24iry5197pskml4iygasw196bdhplj0jmbsb9jhabcjqj2mpsm";
   };
 
-  buildInputs = [ gfortran ];
+  nativeBuildInputs = [ gfortran ];
 
   configurePhase = ''
     echo >make.inc  "SHELL = ${stdenv.shell}"
