@@ -36,7 +36,7 @@ stdenv.mkDerivation rec {
     description = "A high-performance theorem prover and SMT solver";
     homepage    = "https://github.com/Z3Prover/z3";
     license     = stdenv.lib.licenses.mit;
-    platforms   = stdenv.lib.platforms.x86_64;
+    platforms   = with stdenv.lib.platforms; x86_64 ++ aarch64;
     maintainers = [ stdenv.lib.maintainers.thoughtpolice ];
   };
 }
