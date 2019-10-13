@@ -1,21 +1,21 @@
-{ stdenv, fetchFromGitHub, ocaml, findlib, ocamlbuild, menhir }:
+{ stdenv, fetchFromGitHub, ocaml, findlib, dune, opaline, menhir }:
 
 stdenv.mkDerivation rec {
 	name = "ocaml${ocaml.version}-dolmen-${version}";
-	version = "0.2";
+	version = "0.4.1";
 	src = fetchFromGitHub {
 		owner = "Gbury";
 		repo = "dolmen";
 		rev = "v${version}";
-		sha256 = "1b9mf8p6mic0n76acx8x82hhgm2n40sdv0jri95im65l52223saf";
+		sha256 = "1hk4i12ldax6gxsgjzp6f0lzgln0wmghqxk2mkc7blq0ra0fmb7l";
 	};
 
-	buildInputs = [ ocaml findlib ocamlbuild ];
+	buildInputs = [ ocaml findlib dune opaline ];
 	propagatedBuildInputs = [ menhir ];
 
-	makeFlags = "-C src";
-
-	createFindlibDestdir = true;
+   installPhase = ''
+     opaline -bindir $out/bin -sharedir $out/share -libdir $out/lib/ocaml/${ocaml.version}/site-lib
+   '';
 
 	meta = {
 		description = "An OCaml library providing clean and flexible parsers for input languages";

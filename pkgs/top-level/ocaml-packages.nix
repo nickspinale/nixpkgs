@@ -464,6 +464,8 @@ let
 
     mparser =  callPackage ../development/ocaml-modules/mparser { };
 
+    msat = callPackage ../development/ocaml-modules/msat { };
+
     mstruct =  callPackage ../development/ocaml-modules/mstruct { };
 
     mtime =  callPackage ../development/ocaml-modules/mtime { };
@@ -477,6 +479,12 @@ let
     num = if lib.versionOlder "4.06" ocaml.version
       then callPackage ../development/ocaml-modules/num {}
       else null;
+
+    nunchaku = callPackage ../development/ocaml-modules/nunchaku {
+      menhir = menhir.override {
+        version = "20170712";
+      };
+    };
 
     comparelib = callPackage ../development/ocaml-modules/comparelib { };
 
@@ -538,6 +546,10 @@ let
     ocamlsdl= callPackage ../development/ocaml-modules/ocamlsdl { };
 
     ocaml_sqlite3 = callPackage ../development/ocaml-modules/sqlite3 { };
+
+    sequence = callPackage ../development/ocaml-modules/sequence { };
+
+    smbc = callPackage ../development/ocaml-modules/smbc { };
 
     syslog = callPackage ../development/ocaml-modules/syslog { };
 
@@ -626,6 +638,8 @@ let
     spacetime_lib = callPackage ../development/ocaml-modules/spacetime_lib { };
 
     sqlexpr = callPackage ../development/ocaml-modules/sqlexpr { };
+
+    tip-parser = callPackage ../development/ocaml-modules/tip-parser { };
 
     tuntap = callPackage ../development/ocaml-modules/tuntap { };
 
