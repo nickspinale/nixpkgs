@@ -7,7 +7,8 @@ stdenv.mkDerivation {
     sha256 ="0lpbnb4dq4azmsvlhp6khq1gy42kyqyjv8gww74g5lm2y6blm4fa";
   };
 
-  configureFlags = stdenv.lib.optional stdenv.is64bit "--enable-64bit";
+  configureFlags = with stdenv; lib.optional is64bit "--enable-64bit"
+    ++ lib.optional (isAarch32 || isAarch64) "--disable-abiflags";
 
   meta = with stdenv.lib; {
     description = "C runtime libraries of ANTLR v3";
