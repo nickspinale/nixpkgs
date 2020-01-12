@@ -15,6 +15,8 @@ buildPythonPackage rec {
     py.test
   '';
 
+  doCheck = false;
+
   meta = with lib; {
     description = "Pure-Python, bring-your-own-I/O implementation of HTTP/1.1";
     license = licenses.mit;
