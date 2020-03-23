@@ -58,7 +58,7 @@ in
 
     # Generate a GRUB menu.  Amazon's pv-grub uses this to boot our kernel/initrd.
     boot.loader.grub.version = if cfg.hvm then 2 else 1;
-    boot.loader.grub.device = if (cfg.hvm && !cfg.efi) then "/dev/xvda" else "nodev";
+    boot.loader.grub.device = if (cfg.hvm && !cfg.efi) then cfg.bootDevice else "nodev";
     boot.loader.grub.extraPerEntryConfig = mkIf (!cfg.hvm) "root (hd0)";
     boot.loader.grub.efiSupport = cfg.efi;
     boot.loader.grub.efiInstallAsRemovable = cfg.efi;

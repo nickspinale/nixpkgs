@@ -16,6 +16,12 @@
           Whether the EC2 instance is using EFI.
         '';
       };
+      bootDevice = lib.mkOption {
+        default = "/dev/xvda";
+        description = ''
+          EC2 instance boot device.
+        '';
+      };
     };
   };
 }
