@@ -1,6 +1,6 @@
 { lib, stdenv, fetchurl, bison, cmake, pkgconfig
 , boost, icu, libedit, libevent, lz4, ncurses, openssl, protobuf, re2, readline, zlib
-, numactl, perl, cctools, CoreServices, developer_cmds
+, numactl, cctools, CoreServices, developer_cmds
 }:
 
 let
